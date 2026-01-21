@@ -1,51 +1,47 @@
 # libs/styles.py
 """Modern stylesheet definitions for labelImg++."""
 
-# Toolbar stylesheet with modern flat design and hover effects
+# Toolbar stylesheet with modern flat design
 TOOLBAR_STYLE = """
 QToolBar {
-    background: #f8f9fa;
+    background: #f5f5f5;
     border: none;
-    border-right: 1px solid #dee2e6;
+    border-right: 1px solid #ddd;
     spacing: 2px;
     padding: 4px;
 }
 
 QToolBar::separator {
-    background: #dee2e6;
+    background: #ddd;
     width: 1px;
-    height: 24px;
-    margin: 8px 4px;
+    height: 20px;
+    margin: 6px 4px;
 }
 
 QToolButton {
     background: transparent;
     border: none;
-    border-radius: 6px;
-    padding: 6px;
-    margin: 2px;
-    color: #495057;
+    border-radius: 4px;
+    padding: 4px;
+    margin: 1px;
+    color: #000000;
 }
 
 QToolButton:hover {
-    background: #e9ecef;
+    background: #e0e0e0;
 }
 
 QToolButton:pressed {
-    background: #dee2e6;
+    background: #d0d0d0;
 }
 
 QToolButton:checked {
-    background: #d0ebff;
-    color: #1971c2;
+    background: #cce5ff;
+    color: #004085;
 }
 
 QToolButton:disabled {
-    color: #adb5bd;
-}
-
-QToolButton::menu-indicator {
-    image: none;
+    color: #999999;
 }
 """
 
@@ -55,70 +51,28 @@ QMainWindow {
     background: #ffffff;
 }
 
-QDockWidget {
-    titlebar-close-icon: url(:/close);
-    titlebar-normal-icon: url(:/maximize-2);
-}
-
 QDockWidget::title {
-    background: #f8f9fa;
-    padding: 8px;
-    border-bottom: 1px solid #dee2e6;
+    background: #f5f5f5;
+    padding: 6px;
+    border-bottom: 1px solid #ddd;
 }
 
 QListWidget {
     background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 4px;
-}
-
-QListWidget::item {
-    padding: 4px 8px;
-    border-radius: 4px;
-}
-
-QListWidget::item:hover {
-    background: #f1f3f4;
+    border: 1px solid #ddd;
 }
 
 QListWidget::item:selected {
-    background: #d0ebff;
-    color: #1971c2;
-}
-
-QScrollBar:vertical {
-    background: #f8f9fa;
-    width: 12px;
-    border-radius: 6px;
-}
-
-QScrollBar::handle:vertical {
-    background: #dee2e6;
-    border-radius: 6px;
-    min-height: 20px;
-}
-
-QScrollBar::handle:vertical:hover {
-    background: #ced4da;
-}
-
-QScrollBar::add-line:vertical,
-QScrollBar::sub-line:vertical {
-    height: 0px;
+    background: #cce5ff;
+    color: #004085;
 }
 """
 
 # Status bar stylesheet
 STATUS_BAR_STYLE = """
 QStatusBar {
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-    padding: 4px;
-}
-
-QStatusBar::item {
-    border: none;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
 }
 """
 

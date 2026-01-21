@@ -38,8 +38,8 @@ from libs.lightWidget import LightWidget
 from libs.labelDialog import LabelDialog
 from libs.colorDialog import ColorDialog
 from libs.labelFile import LabelFile, LabelFileError, LabelFileFormat
-from libs.toolBar import ToolBar
-from libs.styles import TOOLBAR_STYLE
+from libs.toolBar import ToolBar, DropdownToolButton
+from libs.styles import TOOLBAR_STYLE, get_combined_style
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
 from libs.yolo_io import YoloReader
@@ -367,6 +367,13 @@ class MainWindow(QMainWindow, WindowMixin):
                            'Ctrl+Shift+=', 'light_reset', get_str('lightresetDetail'), checkable=True, enabled=False)
         light_org.setChecked(True)
 
+        # Create brightness dropdown button for toolbar
+        self.brightness_dropdown = DropdownToolButton(
+            'Brightness',
+            new_icon('light_reset'),
+            [light_brighten, light_darken, light_org]
+        )
+
         # Group light controls into a list for easier toggling.
         light_actions = (self.light_widget, light_brighten,
                          light_darken, light_org)
@@ -474,7 +481,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.beginner = (
             open, open_dir, change_save_dir, gallery_mode, None, open_next_image, open_prev_image, verify, save, save_format, None, create, copy, delete, None,
             zoom_in, zoom, zoom_out, fit_window, fit_width, None,
-            light_brighten, light, light_darken, light_org)
+            self.brightness_dropdown)
 
         self.actions.advanced = (
             open, open_dir, change_save_dir, gallery_mode, None, open_next_image, open_prev_image, save, save_format, None,
@@ -1532,7 +1539,9 @@ class MainWindow(QMainWindow, WindowMixin):
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
-        self.default_save_dir = target_dir_path
+        # Only set default_save_dir if not already set (e.g., from command line)
+        if self.default_save_dir is None:
+            self.default_save_dir = target_dir_path
         if self.file_path:
             self.show_bounding_box_from_annotation_file(file_path=self.file_path)
 
@@ -1829,7 +1838,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.set_format(FORMAT_YOLO)
         t_yolo_parse_reader = YoloReader(txt_path, self.image)
         shapes = t_yolo_parse_reader.get_shapes()
-        print(shapes)
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
 
@@ -1881,6 +1889,8 @@ def get_main_app(argv=None):
     if not argv:
         argv = []
     app = QApplication(argv)
+    app.setStyle('Fusion')  # Use Fusion style for consistent cross-platform styling
+    app.setStyleSheet(get_combined_style())  # Apply global stylesheet
     app.setApplicationName(__appname__)
     app.setWindowIcon(new_icon("app"))
     # Tzutalin 201705+: Accept extra agruments to change predefined class file

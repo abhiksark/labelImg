@@ -11,9 +11,7 @@ except ImportError:
 
 
 # Icon size for toolbar buttons (Feather icons are 24x24)
-ICON_SIZE = 24
-# Minimum button size for comfortable clicking
-MIN_BUTTON_SIZE = 44
+ICON_SIZE = 22
 
 
 class ToolBar(QToolBar):
@@ -22,8 +20,8 @@ class ToolBar(QToolBar):
     def __init__(self, title):
         super(ToolBar, self).__init__(title)
         layout = self.layout()
-        layout.setSpacing(2)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(0)
+        layout.setContentsMargins(2, 2, 2, 2)
         self.setContentsMargins(0, 0, 0, 0)
         self.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
         self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
@@ -38,12 +36,64 @@ class ToolBar(QToolBar):
 
 
 class ToolButton(QToolButton):
-    """Custom toolbar button with consistent sizing."""
+    """Custom toolbar button - allows natural sizing for text."""
+
+    # Track the maximum width seen to keep buttons uniform
+    maxWidth = 70
 
     def __init__(self):
         super(ToolButton, self).__init__()
         self.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
-        self.setMinimumSize(MIN_BUTTON_SIZE, MIN_BUTTON_SIZE)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+    def sizeHint(self):
+        # Get the natural size hint
+        hint = super(ToolButton, self).sizeHint()
+        # Ensure minimum width for text visibility
+        width = max(hint.width(), 70)
+        height = max(hint.height(), 40)
+        # Track max width for uniformity
+        ToolButton.maxWidth = max(ToolButton.maxWidth, width)
+        return QSize(ToolButton.maxWidth, height)
 
     def minimumSizeHint(self):
-        return QSize(MIN_BUTTON_SIZE, MIN_BUTTON_SIZE)
+        return QSize(65, 38)
+
+
+class DropdownToolButton(QToolButton):
+    """Toolbar button with dropdown menu for grouping related actions."""
+
+    def __init__(self, text, icon=None, actions=None):
+        super(DropdownToolButton, self).__init__()
+        self.setText(text)
+        if icon:
+            self.setIcon(icon)
+        self.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
+        self.setPopupMode(QToolButton.InstantPopup)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        # Create menu for dropdown actions
+        self.dropdown_menu = QMenu(self)
+        if actions:
+            for action in actions:
+                if action is None:
+                    self.dropdown_menu.addSeparator()
+                else:
+                    self.dropdown_menu.addAction(action)
+        self.setMenu(self.dropdown_menu)
+
+    def add_action(self, action):
+        """Add an action to the dropdown menu."""
+        if action is None:
+            self.dropdown_menu.addSeparator()
+        else:
+            self.dropdown_menu.addAction(action)
+
+    def sizeHint(self):
+        hint = super(DropdownToolButton, self).sizeHint()
+        width = max(hint.width(), 70)
+        height = max(hint.height(), 40)
+        return QSize(width, height)
+
+    def minimumSizeHint(self):
+        return QSize(65, 38)

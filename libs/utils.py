@@ -56,6 +56,8 @@ def add_actions(widget, actions):
             widget.addSeparator()
         elif isinstance(action, QMenu):
             widget.addMenu(action)
+        elif isinstance(action, QWidget):
+            widget.addWidget(action)
         else:
             widget.addAction(action)
 
