@@ -38,9 +38,9 @@ From PyPI (Python 3.6+)
 
 .. code:: shell
 
-    pip3 install labelImg
-    labelImg
-    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    pip3 install labelImgPlusPlus
+    labelImgPlusPlus
+    labelImgPlusPlus [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Build from Source
 ~~~~~~~~~~~~~~~~~
