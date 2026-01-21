@@ -5,7 +5,7 @@ labelImg++
         :target: https://www.python.org/downloads/
 
 .. image:: https://img.shields.io/badge/license-MIT-green.svg
-        :target: https://github.com/abhiksark/labelImg/blob/master/LICENSE
+        :target: https://github.com/abhiksark/labelImg-plus-plus/blob/master/LICENSE
 
 **labelImg++** is an enhanced graphical image annotation tool, forked from the original `LabelImg <https://github.com/tzutalin/labelImg>`__ by Tzutalin.
 
@@ -138,6 +138,6 @@ Or use **Menu > File > Reset All**
 License
 -------
 
-`MIT License <https://github.com/abhiksark/labelImg/blob/master/LICENSE>`_
+`MIT License <https://github.com/abhiksark/labelImg-plus-plus/blob/master/LICENSE>`_
 
 Based on LabelImg by Tzutalin (2015).
