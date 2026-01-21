@@ -1,6 +1,18 @@
 History
 =======
 
+2.0.0a1 (2025-01-22)
+--------------------
+
+* Rebrand to labelImg++
+* Add Gallery Mode - full-screen thumbnail browser with Ctrl+G
+* Thumbnails show annotation status (gray/blue/green borders)
+* Adjustable thumbnail size slider (40px - 300px)
+* Modernize packaging with pyproject.toml
+* Add GitHub Actions CI/CD with PyPI trusted publishing
+* Update dependencies to latest versions
+
+
 1.8.6 (2021-10-10)
 ------------------
 
