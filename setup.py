@@ -8,8 +8,8 @@ import sys
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
-NAME = 'labelImg'
-REQUIRES_PYTHON = '>=3.0.0'
+NAME = 'labelImgPlusPlus'
+REQUIRES_PYTHON = '>=3.6.0'
 REQUIRED_DEP = ['pyqt5', 'lxml']
 about = {}
 
@@ -85,35 +85,41 @@ setup(
     app=APP,
     name=NAME,
     version=about['__version__'],
-    description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
+    description="labelImg++ is an enhanced graphical image annotation tool with Gallery Mode for browsing and labeling images",
     long_description=readme + '\n\n' + history,
-    author="TzuTa Lin",
-    author_email='tzu.ta.lin@gmail.com',
-    url='https://github.com/tzutalin/labelImg',
+    long_description_content_type='text/x-rst',
+    author="Abhik Sarkar",
+    author_email='abhiksark@gmail.com',
+    url='https://github.com/abhiksark/labelImg-plus-plus',
     python_requires=REQUIRES_PYTHON,
     package_dir={'labelImg': '.'},
     packages=required_packages,
     entry_points={
         'console_scripts': [
-            'labelImg=labelImg.labelImg:main'
+            'labelImgPlusPlus=labelImg.labelImg:main',
+            'labelimg++=labelImg.labelImg:main'
         ]
     },
     include_package_data=True,
     install_requires=REQUIRED_DEP,
     license="MIT license",
     zip_safe=False,
-    keywords='labelImg labelTool development annotation deeplearning',
+    keywords='labelImg labelImgPlusPlus labelTool annotation deeplearning image-annotation bounding-box gallery',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Scientific/Engineering :: Image Recognition',
     ],
     package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']},
     options={'py2app': OPTIONS},
