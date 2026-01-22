@@ -1,10 +1,10 @@
-labelImg++
-==========
-
 .. image:: resources/logo/labelimg_logo.png
      :alt: labelImg++ Logo
      :width: 200
      :align: center
+
+labelImg++
+==========
 
 .. image:: https://img.shields.io/pypi/v/labelImgPlusPlus.svg
         :target: https://pypi.org/project/labelImgPlusPlus/
