@@ -42,23 +42,18 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          # Run pytest and capture exit code
-          # Qt cleanup can cause segfault after tests pass, so check output
           python -m pytest tests/ -v 2>&1 | tee pytest_output.txt
-          # Check if tests passed (ignore Qt cleanup segfault)
           grep -q "passed" pytest_output.txt && ! grep -q "FAILED\|ERROR" pytest_output.txt
 
   publish:
     needs: test
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-
     permissions:
       id-token: write
-
     environment:
       name: pypi
-      url: https://pypi.org/project/labelImgPlusPlus/
+      url: https://pypi.org/project/labelimgplusplus/
 
     steps:
       - uses: actions/checkout@v4
@@ -82,3 +77,72 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.12.4
+
+  package-macos:
+    needs: test
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyqt5==5.15.6 lxml pyinstaller
+      - name: Build Qt resources
+        run: pyrcc5 -o libs/resources.py resources.qrc
+      - name: Package
+        run: pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImgPlusPlus" -c labelImg.py -p ./libs -p ./
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macOS-artifact
+          path: dist/labelImgPlusPlus
+
+  package-windows:
+    needs: test
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyqt5==5.15.6 lxml pyinstaller
+      - name: Build Qt resources
+        run: pyrcc5 -o libs/resources.py resources.qrc
+      - name: Package
+        run: pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImgPlusPlus" -c labelImg.py -p ./libs -p ./
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Windows-artifact
+          path: dist/labelImgPlusPlus.exe
+
+  package-linux:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyqt5==5.15.6 lxml pyinstaller
+      - name: Build Qt resources
+        run: pyrcc5 -o libs/resources.py resources.qrc
+      - name: Package
+        run: pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImgPlusPlus" -c labelImg.py -p ./libs -p ./
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Linux-artifact
+          path: dist/labelImgPlusPlus
