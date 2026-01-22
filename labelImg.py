@@ -466,6 +466,31 @@ class MainWindow(QMainWindow, WindowMixin):
         self.display_label_option.setChecked(settings.get(SETTING_PAINT_LABEL, False))
         self.display_label_option.triggered.connect(self.toggle_paint_labels_option)
 
+        # Icon size submenu for toolbar
+        self.icon_size_menu = QMenu(get_str('iconSize'), self)
+        self.icon_size_group = QActionGroup(self)
+        self.icon_size_group.setExclusive(True)
+        icon_sizes = [
+            (get_str('iconSizeSmall'), 16),
+            (get_str('iconSizeMedium'), 22),
+            (get_str('iconSizeLarge'), 28),
+            (get_str('iconSizeXLarge'), 36),
+            (get_str('iconSizeAuto'), 0),  # 0 means auto-detect
+        ]
+        saved_icon_size = settings.get(SETTING_ICON_SIZE, 0)
+        for name, size in icon_sizes:
+            icon_action = QAction(name, self)
+            icon_action.setCheckable(True)
+            icon_action.setData(size)
+            icon_action.triggered.connect(self.change_icon_size)
+            self.icon_size_group.addAction(icon_action)
+            self.icon_size_menu.addAction(icon_action)
+            if size == saved_icon_size:
+                icon_action.setChecked(True)
+        # Default to auto if nothing selected
+        if not any(a.isChecked() for a in self.icon_size_group.actions()):
+            self.icon_size_group.actions()[-1].setChecked(True)
+
         add_actions(self.menus.file,
                     (open, open_dir, change_save_dir, open_annotation, copy_prev_bounding, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
         add_actions(self.menus.help, (help_default, show_info, show_shortcut))
@@ -477,7 +502,8 @@ class MainWindow(QMainWindow, WindowMixin):
             hide_all, show_all, None,
             zoom_in, zoom_out, zoom_org, None,
             fit_window, fit_width, None,
-            light_brighten, light_darken, light_org))
+            light_brighten, light_darken, light_org, None))
+        self.menus.view.addMenu(self.icon_size_menu)
 
         self.menus.file.aboutToShow.connect(self.update_file_menu)
 
@@ -489,6 +515,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.tools.setStyleSheet(TOOLBAR_STYLE)
+
+        # Apply saved icon size setting
+        saved_icon_size = settings.get(SETTING_ICON_SIZE, 0)
+        if saved_icon_size > 0:
+            self.tools.update_icon_size(saved_icon_size)
+
         self.actions.beginner = (
             open, open_dir, change_save_dir, gallery_mode, None, open_next_image, open_prev_image, verify, save, save_format, None, create, copy, delete, None,
             zoom_in, zoom, zoom_out, fit_window, fit_width, None,
@@ -725,10 +757,18 @@ class MainWindow(QMainWindow, WindowMixin):
     def set_beginner(self):
         self.tools.clear()
         add_actions(self.tools, self.actions.beginner)
+        self.tools.add_expand_button()
+        # Restore expanded state
+        if self.settings.get(SETTING_TOOLBAR_EXPANDED, False):
+            self.tools.set_expanded(True)
 
     def set_advanced(self):
         self.tools.clear()
         add_actions(self.tools, self.actions.advanced)
+        self.tools.add_expand_button()
+        # Restore expanded state
+        if self.settings.get(SETTING_TOOLBAR_EXPANDED, False):
+            self.tools.set_expanded(True)
 
     def set_dirty(self):
         self.dirty = True
@@ -1522,6 +1562,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_PAINT_LABEL] = self.display_label_option.isChecked()
         settings[SETTING_DRAW_SQUARE] = self.draw_squares_option.isChecked()
         settings[SETTING_LABEL_FILE_FORMAT] = self.label_file_format
+        settings[SETTING_TOOLBAR_EXPANDED] = self.tools.is_expanded()
         settings.save()
 
     def load_recent(self, filename):
@@ -1976,6 +2017,23 @@ class MainWindow(QMainWindow, WindowMixin):
     def toggle_draw_square(self):
         self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
 
+    def change_icon_size(self):
+        """Change toolbar icon size based on user selection."""
+        action = self.sender()
+        if action:
+            size = action.data()
+            self.settings[SETTING_ICON_SIZE] = size
+
+            if size == 0:
+                # Auto mode - recalculate from DPI
+                from libs.toolBar import calculate_icon_size
+                size = calculate_icon_size()
+
+            # Update toolbar icon size
+            if hasattr(self, 'tools') and self.tools:
+                self.tools.update_icon_size(size)
+
+
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
 
@@ -1996,6 +2054,14 @@ def get_main_app(argv=None):
     """
     if not argv:
         argv = []
+
+    # Enable high-DPI scaling for better icon rendering on HiDPI displays
+    try:
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    except AttributeError:
+        pass  # Qt4 doesn't have these attributes
+
     app = QApplication(argv)
     app.setStyle('Fusion')  # Use Fusion style for consistent cross-platform styling
     app.setStyleSheet(get_combined_style())  # Apply global stylesheet
