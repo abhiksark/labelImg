@@ -1,6 +1,11 @@
 labelImg++
 ==========
 
+.. image:: resources/logo/labelimg_logo.png
+     :alt: labelImg++ Logo
+     :width: 200
+     :align: center
+
 .. image:: https://img.shields.io/pypi/v/labelImgPlusPlus.svg
         :target: https://pypi.org/project/labelImgPlusPlus/
 
@@ -20,8 +25,8 @@ labelImg++
 
 It is written in Python and uses PyQt5 for its graphical interface. Annotations are saved in PASCAL VOC (XML), YOLO (TXT), and CreateML (JSON) formats.
 
-.. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
-     :alt: Demo Image
+.. image:: resources/demo/labelimg_screenshot.png
+     :alt: labelImg++ Screenshot
 
 New Features in labelImg++
 --------------------------
