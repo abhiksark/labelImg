@@ -23,6 +23,8 @@ labelImg++
 
 **labelImg++** is a powerful graphical image annotation tool for creating bounding box labels, designed for machine learning and computer vision projects. Forked from the original `LabelImg <https://github.com/tzutalin/labelImg>`__ with significant enhancements.
 
+    **Note:** Current version is ``2.0.0a`` (alpha). Version ``2.0.0`` will be the first stable release.
+
 .. image:: resources/demo/labelimg_screenshot.png
      :alt: labelImg++ Screenshot
      :align: center
