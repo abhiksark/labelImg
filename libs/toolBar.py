@@ -33,13 +33,11 @@ class ToolBar(QToolBar):
         btn.setDefaultAction(action)
         btn.setToolButtonStyle(self.toolButtonStyle())
         self.addWidget(btn)
+        return btn
 
 
 class ToolButton(QToolButton):
     """Custom toolbar button - allows natural sizing for text."""
-
-    # Track the maximum width seen to keep buttons uniform
-    maxWidth = 70
 
     def __init__(self):
         super(ToolButton, self).__init__()
@@ -47,14 +45,10 @@ class ToolButton(QToolButton):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
     def sizeHint(self):
-        # Get the natural size hint
         hint = super(ToolButton, self).sizeHint()
-        # Ensure minimum width for text visibility
         width = max(hint.width(), 70)
         height = max(hint.height(), 40)
-        # Track max width for uniformity
-        ToolButton.maxWidth = max(ToolButton.maxWidth, width)
-        return QSize(ToolButton.maxWidth, height)
+        return QSize(width, height)
 
     def minimumSizeHint(self):
         return QSize(65, 38)
