@@ -3,6 +3,7 @@
    <p align="center">
      <img src="resources/logo/labelimg_logo.png" alt="labelImg++ Logo" width="120">
      <h1>labelImg++</h1>
+     <p><em>A modern, enhanced image annotation tool for machine learning</em></p>
    </p>
 
 .. image:: https://img.shields.io/pypi/v/labelImgPlusPlus.svg
@@ -20,40 +21,71 @@
 .. image:: https://img.shields.io/badge/license-MIT-green.svg
         :target: https://github.com/abhiksark/labelImg-plus-plus/blob/master/LICENSE
 
-**labelImg++** is an enhanced graphical image annotation tool, forked from the original `LabelImg <https://github.com/tzutalin/labelImg>`__ by Tzutalin.
+----
 
-It is written in Python and uses PyQt5 for its graphical interface. Annotations are saved in PASCAL VOC (XML), YOLO (TXT), and CreateML (JSON) formats.
+**labelImg++** is a powerful graphical image annotation tool for creating bounding box labels, designed for machine learning and computer vision projects. Forked from the original `LabelImg <https://github.com/tzutalin/labelImg>`__ with significant enhancements.
 
 .. image:: resources/demo/labelimg_screenshot.png
      :alt: labelImg++ Screenshot
+     :align: center
 
-New Features in labelImg++
---------------------------
+Features
+--------
 
-Gallery Mode
-~~~~~~~~~~~~
+Core Annotation Features
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Press **Ctrl+G** or click the **Gallery Mode** button in the toolbar to open a full-screen gallery view of all images in the current directory.
+- **Multi-format support**: PASCAL VOC (XML), YOLO (TXT), CreateML (JSON)
+- **Bounding box annotation** with drag-and-drop interface
+- **Auto-save mode** for uninterrupted workflow
+- **Predefined class labels** with customizable list
+- **Verification system** to mark completed annotations
 
-- Thumbnails display annotation status with colored borders:
-  - **Gray border**: No labels
-  - **Blue border**: Has labels
-  - **Green border**: Verified
-- Use the **size slider** to adjust thumbnail size (40px - 300px)
-- **Double-click** a thumbnail to load that image
-- Close the gallery window to return to normal view
+New in labelImg++ v2.0.0a
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Undo/Redo Support**
+    Full undo/redo for all annotation actions. Press **Ctrl+Z** to undo and **Ctrl+Y** to redo. Never lose your work again!
+
+**Gallery Mode with Annotation Preview**
+    Visual thumbnail gallery showing all images with bounding box overlays directly on thumbnails.
+
+    - Colored borders indicate status: Gray (no labels), Blue (has labels), Green (verified)
+    - Bounding boxes visible on thumbnails for quick review
+    - Adjustable thumbnail size (40px - 300px)
+    - Press **Ctrl+G** to toggle gallery mode
+
+**Modern UI with Feather Icons**
+    Clean, modern interface with beautiful Feather icons and improved visual design.
+
+**Responsive DPI Scaling**
+    Icons and UI elements scale properly on high-DPI displays (4K, Retina).
+
+**Expandable Toolbar**
+    Click the chevron at the bottom of the toolbar to expand/collapse and show full button labels.
+
+**Consolidated File Menu**
+    Open File, Open Dir, and Change Save Dir combined into a single dropdown for cleaner toolbar.
+
+**Brightness Adjustment**
+    Adjust image brightness on-the-fly to better see annotations on dark or light images.
 
 Installation
 ------------
 
-From PyPI (Python 3.6+)
+From PyPI (Recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: shell
 
     pip3 install labelImgPlusPlus
     labelImgPlusPlus
-    labelImgPlusPlus [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
+With a specific image or directory:
+
+.. code:: shell
+
+    labelImgPlusPlus [IMAGE_PATH] [PRE-DEFINED CLASS FILE] [SAVE_DIR]
 
 Build from Source
 ~~~~~~~~~~~~~~~~~
@@ -63,7 +95,7 @@ Build from Source
 .. code:: shell
 
     sudo apt-get install pyqt5-dev-tools
-    sudo pip3 install -r requirements/requirements-linux-python3.txt
+    pip3 install -r requirements/requirements-linux-python3.txt
     make qt5py3
     python3 labelImg.py
 
@@ -83,64 +115,105 @@ Build from Source
     pyrcc5 -o libs/resources.py resources.qrc
     python labelImg.py
 
-Usage
------
+Quick Start
+-----------
 
-1. Click **Open Dir** to load images from a directory
-2. Click **Create RectBox** or press **W** to draw bounding boxes
-3. Click and drag to annotate objects
-4. Press **Ctrl+S** to save annotations
-5. Use **D** and **A** to navigate between images
+1. **Open images**: Click the file dropdown button or press **Ctrl+U** to load a directory
+2. **Create annotations**: Press **W** or click **Create RectBox**, then drag to draw
+3. **Label objects**: Select a class from the popup dialog
+4. **Save**: Press **Ctrl+S** to save annotations
+5. **Navigate**: Use **D** (next) and **A** (previous) to move between images
+6. **Review**: Press **Ctrl+G** for gallery mode to review all annotations
 
-Supported Formats
-~~~~~~~~~~~~~~~~~
+Supported Annotation Formats
+----------------------------
 
-- **PASCAL VOC** (.xml) - Used by ImageNet
-- **YOLO** (.txt) - Normalized coordinates
-- **CreateML** (.json) - Apple's format
++---------------+------------+------------------------------------------+
+| Format        | Extension  | Description                              |
++===============+============+==========================================+
+| PASCAL VOC    | .xml       | ImageNet format, absolute coordinates    |
++---------------+------------+------------------------------------------+
+| YOLO          | .txt       | Normalized coordinates (0-1), with       |
+|               |            | classes.txt for class names              |
++---------------+------------+------------------------------------------+
+| CreateML      | .json      | Apple's ML format for iOS/macOS          |
++---------------+------------+------------------------------------------+
 
-Hotkeys
--------
+Keyboard Shortcuts
+------------------
+
+**File Operations**
 
 +--------------------+--------------------------------------------+
-| Ctrl + u           | Load all images from a directory           |
+| Ctrl + O           | Open file                                  |
 +--------------------+--------------------------------------------+
-| Ctrl + r           | Change default annotation target dir       |
+| Ctrl + U           | Open directory                             |
 +--------------------+--------------------------------------------+
-| Ctrl + s           | Save                                       |
+| Ctrl + R           | Change save directory                      |
 +--------------------+--------------------------------------------+
-| Ctrl + d           | Copy current label and rect box            |
+| Ctrl + S           | Save current annotation                    |
 +--------------------+--------------------------------------------+
-| Ctrl + Shift + d   | Delete current image                       |
+| Ctrl + Shift + S   | Save as                                    |
 +--------------------+--------------------------------------------+
-| Ctrl + g           | Toggle Gallery Mode                        |
+
+**Navigation**
+
 +--------------------+--------------------------------------------+
-| Space              | Flag image as verified                     |
+| D                  | Next image                                 |
 +--------------------+--------------------------------------------+
-| w                  | Create a rect box                          |
+| A                  | Previous image                             |
 +--------------------+--------------------------------------------+
-| d                  | Next image                                 |
+| Ctrl + G           | Toggle Gallery Mode                        |
 +--------------------+--------------------------------------------+
-| a                  | Previous image                             |
+
+**Annotation**
+
 +--------------------+--------------------------------------------+
-| del                | Delete selected rect box                   |
+| W                  | Create bounding box                        |
++--------------------+--------------------------------------------+
+| Ctrl + Z           | Undo                                       |
++--------------------+--------------------------------------------+
+| Ctrl + Y           | Redo                                       |
++--------------------+--------------------------------------------+
+| Ctrl + D           | Duplicate selected box                     |
++--------------------+--------------------------------------------+
+| Del                | Delete selected box                        |
++--------------------+--------------------------------------------+
+| Space              | Mark image as verified                     |
++--------------------+--------------------------------------------+
+| Arrow keys         | Move selected box                          |
++--------------------+--------------------------------------------+
+
+**View**
+
 +--------------------+--------------------------------------------+
 | Ctrl + +           | Zoom in                                    |
 +--------------------+--------------------------------------------+
 | Ctrl + -           | Zoom out                                   |
 +--------------------+--------------------------------------------+
-| Arrow keys         | Move selected rect box                     |
+| Ctrl + F           | Fit window                                 |
++--------------------+--------------------------------------------+
+| Ctrl + Shift + F   | Fit width                                  |
 +--------------------+--------------------------------------------+
 
-Predefined Classes
-------------------
+Configuration
+-------------
 
-Edit ``data/predefined_classes.txt`` to customize label options.
+**Predefined Classes**
 
-Reset Settings
---------------
+Edit ``data/predefined_classes.txt`` to customize the label options:
 
-If you encounter issues, remove the settings file:
+.. code::
+
+    dog
+    cat
+    person
+    car
+    bicycle
+
+**Reset Settings**
+
+If you encounter issues, reset the settings:
 
 .. code:: shell
 
@@ -148,9 +221,27 @@ If you encounter issues, remove the settings file:
 
 Or use **Menu > File > Reset All**
 
+Contributing
+------------
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (``git checkout -b feature/amazing-feature``)
+3. Commit your changes (``git commit -m 'Add amazing feature'``)
+4. Push to the branch (``git push origin feature/amazing-feature``)
+5. Open a Pull Request
+
 License
 -------
 
 `MIT License <https://github.com/abhiksark/labelImg-plus-plus/blob/master/LICENSE>`_
 
-Based on `LabelImg <https://github.com/HumanSignal/labelImg>`__ by `Tzutalin <https://github.com/tzutalin>`__ (2015).
+Based on `LabelImg <https://github.com/HumanSignal/labelImg>`__ by `Tzutalin <https://github.com/tzutalin>`__.
+
+Acknowledgments
+---------------
+
+- Original `LabelImg <https://github.com/tzutalin/labelImg>`__ by Tzutalin
+- `Feather Icons <https://feathericons.com/>`__ for modern iconography
+- All contributors and users of labelImg++
