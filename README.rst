@@ -237,6 +237,11 @@ License
 
 Based on `LabelImg <https://github.com/HumanSignal/labelImg>`__ by `Tzutalin <https://github.com/tzutalin>`__.
 
+Author
+------
+
+Maintained by `Abhik Sarkar <https://abhik.ai>`__
+
 Acknowledgments
 ---------------
 
