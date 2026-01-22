@@ -99,6 +99,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.m_img_list = []
         self._path_to_idx = {}  # O(1) lookup: path -> index
         self._annotation_status_cache = {}  # Cache: path -> status (reduces I/O)
+
+        # Memory optimization for large images (Issue #31)
+        self._image_scale_factor = 1.0  # Display size / Original size
+        self._original_image_size = None  # QSize of original image
+
         self.dir_name = None
         self.label_hist = []
         self.last_open_dir = None
@@ -1222,9 +1227,15 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def load_labels(self, shapes):
         s = []
+        # Scale factor for converting original coords to display coords (Issue #31)
+        scale = self._image_scale_factor if hasattr(self, '_image_scale_factor') else 1.0
+
         for label, points, line_color, fill_color, difficult in shapes:
             shape = Shape(label=label)
             for x, y in points:
+                # Scale coordinates from original to display space
+                x = x * scale
+                y = y * scale
 
                 # Ensure the labels are within the bounds of the image. If not, fix them.
                 x, y, snapped = self.canvas.snap_point_to_canvas(x, y)
@@ -1267,12 +1278,16 @@ class MainWindow(QMainWindow, WindowMixin):
             self.label_file = LabelFile()
             self.label_file.verified = self.canvas.verified
 
+        # Scale factor for converting display coords to original coords (Issue #31)
+        inv_scale = 1.0 / self._image_scale_factor if hasattr(self, '_image_scale_factor') and self._image_scale_factor != 0 else 1.0
+
         def format_shape(s):
+            # Scale coordinates from display space to original image space
+            scaled_points = [(p.x() * inv_scale, p.y() * inv_scale) for p in s.points]
             return dict(label=s.label,
                         line_color=s.line_color.getRgb(),
                         fill_color=s.fill_color.getRgb(),
-                        points=[(p.x(), p.y()) for p in s.points],
-                        # add chris
+                        points=scaled_points,
                         difficult=s.difficult)
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
@@ -1574,21 +1589,42 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.fill_color = QColor(*self.label_file.fillColor)
                 self.canvas.verified = self.label_file.verified
             else:
-                # Load image:
-                # read data first and store for saving into label file.
-                self.image_data = read(unicode_file_path, None)
+                # Load image with memory-efficient downsampling for large images
                 self.label_file = None
                 self.canvas.verified = False
 
-            if isinstance(self.image_data, QImage):
-                image = self.image_data
-            else:
-                image = QImage.fromData(self.image_data)
-            if image.isNull():
-                self.error_message(u'Error opening file',
-                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicode_file_path)
-                self.status("Error reading %s" % unicode_file_path)
-                return False
+                # Use QImageReader for memory-efficient loading
+                reader = QImageReader(unicode_file_path)
+                reader.setAutoTransform(True)
+                original_size = reader.size()
+
+                if not original_size.isValid():
+                    self.error_message(u'Error opening file',
+                                       u"<p>Make sure <i>%s</i> is a valid image file." % unicode_file_path)
+                    self.status("Error reading %s" % unicode_file_path)
+                    return False
+
+                # Downsample if larger than 2048px on either dimension (Issue #31)
+                MAX_DISPLAY_DIM = 2048
+                if original_size.width() > MAX_DISPLAY_DIM or original_size.height() > MAX_DISPLAY_DIM:
+                    scaled_size = original_size.scaled(MAX_DISPLAY_DIM, MAX_DISPLAY_DIM, Qt.KeepAspectRatio)
+                    reader.setScaledSize(scaled_size)
+                    self._image_scale_factor = scaled_size.width() / original_size.width()
+                else:
+                    self._image_scale_factor = 1.0
+
+                self._original_image_size = original_size
+                image = reader.read()
+
+                if image.isNull():
+                    self.error_message(u'Error opening file',
+                                       u"<p>Make sure <i>%s</i> is a valid image file." % unicode_file_path)
+                    self.status("Error reading %s" % unicode_file_path)
+                    return False
+
+                # Don't store full image data - saves memory
+                self.image_data = None
+
             self.status("Loaded %s" % os.path.basename(unicode_file_path))
             self.image = image
             self.file_path = unicode_file_path
@@ -2156,7 +2192,24 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         self.set_format(FORMAT_YOLO)
-        t_yolo_parse_reader = YoloReader(txt_path, self.image)
+        # Use original image size for YOLO coordinate conversion (Issue #31)
+        # YOLO stores normalized coords, so we need original dimensions
+        if hasattr(self, '_original_image_size') and self._original_image_size is not None:
+            # Create a mock image object with original dimensions
+            class MockImage:
+                def __init__(self, size, grayscale=False):
+                    self._size = size
+                    self._grayscale = grayscale
+                def width(self):
+                    return self._size.width()
+                def height(self):
+                    return self._size.height()
+                def isGrayscale(self):
+                    return self._grayscale
+            mock_img = MockImage(self._original_image_size, self.image.isGrayscale())
+            t_yolo_parse_reader = YoloReader(txt_path, mock_img)
+        else:
+            t_yolo_parse_reader = YoloReader(txt_path, self.image)
         shapes = t_yolo_parse_reader.get_shapes()
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
