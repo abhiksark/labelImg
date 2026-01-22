@@ -611,9 +611,32 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Callbacks:
         self.zoom_widget.valueChanged.connect(self.paint_canvas)
+        self.zoom_widget.valueChanged.connect(self.update_zoom_display)
         self.light_widget.valueChanged.connect(self.paint_canvas)
 
         self.populate_mode_actions()
+
+        # Status bar permanent widgets (left to right)
+        # Image counter
+        self.label_image_count = QLabel('Image: 0 / 0')
+        self.label_image_count.setMinimumWidth(100)
+        self.statusBar().addPermanentWidget(self.label_image_count)
+
+        # Annotation count
+        self.label_box_count = QLabel('Boxes: 0')
+        self.label_box_count.setMinimumWidth(70)
+        self.statusBar().addPermanentWidget(self.label_box_count)
+
+        # Zoom level
+        self.label_zoom = QLabel('Zoom: 100%')
+        self.label_zoom.setMinimumWidth(80)
+        self.statusBar().addPermanentWidget(self.label_zoom)
+
+        # Save status indicator
+        self.label_save_status = QLabel('●')
+        self.label_save_status.setStyleSheet('color: green; font-size: 14px;')
+        self.label_save_status.setToolTip('Saved')
+        self.statusBar().addPermanentWidget(self.label_save_status)
 
         # Display cursor coordinates at the right of status bar
         self.label_coordinates = QLabel('')
@@ -781,11 +804,14 @@ class MainWindow(QMainWindow, WindowMixin):
     def set_dirty(self):
         self.dirty = True
         self.actions.save.setEnabled(True)
+        self.update_save_status(saved=False)
+        self.update_box_count()
 
     def set_clean(self):
         self.dirty = False
         self.actions.save.setEnabled(False)
         self.actions.create.setEnabled(True)
+        self.update_save_status(saved=True)
 
     def toggle_actions(self, value=True):
         """Enable/Disable widgets which depend on an opened image."""
@@ -802,6 +828,42 @@ class MainWindow(QMainWindow, WindowMixin):
     def status(self, message, delay=5000):
         self.statusBar().showMessage(message, delay)
 
+    def update_status_bar(self):
+        """Update all status bar widgets."""
+        self.update_image_count()
+        self.update_box_count()
+        self.update_zoom_display()
+
+    def update_image_count(self):
+        """Update image counter in status bar."""
+        if self.m_img_list and self.file_path:
+            try:
+                idx = self.m_img_list.index(self.file_path) + 1
+            except ValueError:
+                idx = 0
+            self.label_image_count.setText(f'Image: {idx} / {len(self.m_img_list)}')
+        else:
+            self.label_image_count.setText('Image: 0 / 0')
+
+    def update_box_count(self):
+        """Update annotation count in status bar."""
+        count = len(self.canvas.shapes) if self.canvas else 0
+        self.label_box_count.setText(f'Boxes: {count}')
+
+    def update_zoom_display(self):
+        """Update zoom level in status bar."""
+        if self.zoom_widget:
+            self.label_zoom.setText(f'Zoom: {self.zoom_widget.value()}%')
+
+    def update_save_status(self, saved=True):
+        """Update save status indicator in status bar."""
+        if saved:
+            self.label_save_status.setStyleSheet('color: green; font-size: 14px;')
+            self.label_save_status.setToolTip('Saved')
+        else:
+            self.label_save_status.setStyleSheet('color: orange; font-size: 14px;')
+            self.label_save_status.setToolTip('Unsaved changes')
+
     def reset_state(self):
         self.items_to_shapes.clear()
         self.shapes_to_items.clear()
@@ -814,6 +876,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.combo_box.cb.clear()
         # Clear undo stack when loading new file
         self.undo_stack.clear()
+        # Reset status bar widgets
+        self.label_box_count.setText('Boxes: 0')
+        self.update_save_status(saved=True)
 
     def current_item(self):
         items = self.label_list.selectedItems()
@@ -1457,6 +1522,10 @@ class MainWindow(QMainWindow, WindowMixin):
             counter = self.counter_str()
             self.setWindowTitle(__appname__ + ' ' + file_path + ' ' + counter)
 
+            # Update status bar widgets
+            self.update_status_bar()
+            self.update_save_status(saved=True)
+
             # Default : select last item if there is at least one item
             if self.label_list.count():
                 self.label_list.setCurrentItem(self.label_list.item(self.label_list.count() - 1))
@@ -1689,6 +1758,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.full_gallery.set_image_list(self.m_img_list)
             self._refresh_full_gallery_statuses()
 
+        # Update image count in status bar
+        self.update_image_count()
         self.open_next_image()
 
     def verify_image(self, _value=False):
