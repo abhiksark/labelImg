@@ -21,7 +21,7 @@ labelImg++
 
 ----
 
-**labelImg++** is a powerful graphical image annotation tool for creating bounding box labels, designed for machine learning and computer vision projects. Forked from the original `LabelImg <https://github.com/tzutalin/labelImg>`__ with significant enhancements.
+**labelImg++** is a powerful graphical image annotation tool for creating bounding box labels, designed for machine learning and computer vision projects. Forked from the original LabelImg with significant enhancements.
 
     **Note:** Current version is ``2.0.0a`` (alpha). Version ``2.0.0`` will be the first stable release.
 
@@ -237,7 +237,7 @@ License
 
 `MIT License <https://github.com/abhiksark/labelImg-plus-plus/blob/master/LICENSE>`_
 
-Based on `LabelImg <https://github.com/HumanSignal/labelImg>`__ by `Tzutalin <https://github.com/tzutalin>`__.
+Based on LabelImg by Tzutalin.
 
 Author
 ------
@@ -247,6 +247,6 @@ Maintained by `Abhik Sarkar <https://abhik.ai>`__
 Acknowledgments
 ---------------
 
-- Original `LabelImg <https://github.com/tzutalin/labelImg>`__ by Tzutalin
+- Original LabelImg by Tzutalin
 - `Feather Icons <https://feathericons.com/>`__ for modern iconography
 - All contributors and users of labelImg++
