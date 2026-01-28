@@ -41,8 +41,8 @@ Core Annotation Features
 - **Predefined class labels** with customizable list
 - **Verification system** to mark completed annotations
 
-New in labelImg++ v2.0.0a
-~~~~~~~~~~~~~~~~~~~~~~~~~
+New in labelImg++ v2.0
+~~~~~~~~~~~~~~~~~~~~~~
 
 **Undo/Redo Support**
     Full undo/redo for all annotation actions. Press **Ctrl+Z** to undo and **Ctrl+Y** to redo. Never lose your work again!
@@ -220,6 +220,42 @@ If you encounter issues, reset the settings:
     rm ~/.labelImgSettings.pkl
 
 Or use **Menu > File > Reset All**
+
+Roadmap
+-------
+
+**v2.0.0b (Beta)** - *Current*
+    Bug fixes and stability improvements
+
+    - Silent error handling fixed
+    - YOLO format crash on missing classes.txt fixed
+    - Format change warning dialog added
+    - Save location visibility in title bar
+    - Auto-save menu items clarified
+    - Gallery status color legend added
+    - Progress indicator for large directories
+
+**v2.1.0** - *Planned*
+    - Annotation review workflow
+    - Dataset splitting tool (train/val/test)
+    - Label consistency checker
+    - Annotation statistics dashboard
+    - Improved label dialog with search/filter
+    - Keyboard shortcuts customization
+
+**v2.2.0** - *Future*
+    - Dark mode theme
+    - Polygon annotation support
+    - Recent files menu
+    - Snap to grid / alignment guides
+
+**v3.0.0** - *Vision*
+    - Plugin architecture
+    - COCO format support
+    - Ultralytics/YOLOv8 direct export
+    - FiftyOne dataset integration
+
+See the `GitHub Issues <https://github.com/abhiksark/labelImg-plus-plus/issues>`_ for detailed feature tracking.
 
 Contributing
 ------------
