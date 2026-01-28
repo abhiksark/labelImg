@@ -476,6 +476,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.auto_saving = QAction(get_str('autoSaveMode'), self)
         self.auto_saving.setCheckable(True)
         self.auto_saving.setChecked(settings.get(SETTING_AUTO_SAVE, False))
+        self.auto_saving.setToolTip(get_str('autoSaveModeDetail'))
 
         # Auto-save timer (Issue #13)
         self.auto_save_timer = QTimer(self)
@@ -486,6 +487,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.auto_save_enabled.setCheckable(True)
         self.auto_save_enabled.setChecked(settings.get(SETTING_AUTO_SAVE_ENABLED, False))
         self.auto_save_enabled.triggered.connect(self._toggle_auto_save_timer)
+        self.auto_save_enabled.setToolTip(get_str('autoSaveEnabledDetail'))
 
         # Auto-save interval submenu
         self.auto_save_interval_menu = QMenu(get_str('autoSaveInterval'), self)
@@ -740,15 +742,32 @@ class MainWindow(QMainWindow, WindowMixin):
             LabelFile.suffix = JSON_EXT
 
     def change_format(self):
+        # Determine the new format
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-            self.set_format(FORMAT_YOLO)
+            new_format = FORMAT_YOLO
+            warning = "Switching to YOLO format.\n\nNote: The 'difficult' flag will be lost."
         elif self.label_file_format == LabelFileFormat.YOLO:
-            self.set_format(FORMAT_CREATEML)
+            new_format = FORMAT_CREATEML
+            warning = "Switching to CreateML format."
         elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            self.set_format(FORMAT_PASCALVOC)
+            new_format = FORMAT_PASCALVOC
+            warning = "Switching to PASCAL VOC format."
         else:
             raise ValueError('Unknown label file format.')
-        self.set_dirty()
+
+        # Show confirmation dialog
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle("Change Annotation Format")
+        msg.setText(warning)
+        msg.setInformativeText("This will only affect new saves. Existing annotation files will not be converted.")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setDefaultButton(QMessageBox.Ok)
+
+        if msg.exec_() == QMessageBox.Ok:
+            self.set_format(new_format)
+            self.set_dirty()
+            self.status(f"Format changed to {new_format}")
 
     def no_shapes(self):
         return not self.items_to_shapes
@@ -981,7 +1000,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
             try:
                 wb.get('chrome').open(link, new=2)
-            except:
+            except (wb.Error, KeyError):
                 wb.open(link, new=2)
         elif browser.lower() in wb._browsers:
             wb.get(browser.lower()).open(link, new=2)
@@ -1208,19 +1227,16 @@ class MainWindow(QMainWindow, WindowMixin):
 
         difficult = self.diffc_button.isChecked()
 
-        try:
-            shape = self.items_to_shapes[item]
-        except:
-            pass
+        shape = self.items_to_shapes.get(item)
+        if shape is None:
+            return
+
         # Checked and Update
-        try:
-            if difficult != shape.difficult:
-                shape.difficult = difficult
-                self.set_dirty()
-            else:  # User probably changed item visibility
-                self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
-        except:
-            pass
+        if difficult != shape.difficult:
+            shape.difficult = difficult
+            self.set_dirty()
+        else:  # User probably changed item visibility
+            self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
 
     # React to canvas signals.
     def shape_selection_changed(self, selected=False):
@@ -1904,15 +1920,41 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dir_name = dir_path
         self.file_path = None
         self.file_list_widget.clear()
+
+        # Show progress dialog for scanning
+        progress = QProgressDialog("Scanning directory...", "Cancel", 0, 0, self)
+        progress.setWindowTitle("Loading Images")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(500)  # Only show if operation takes > 500ms
+        progress.setValue(0)
+        QApplication.processEvents()
+
         self.m_img_list = self.scan_all_images(dir_path)
         self._path_to_idx = {path: idx for idx, path in enumerate(self.m_img_list)}
         self._annotation_status_cache.clear()  # Clear cache for new directory
         self.img_count = len(self.m_img_list)
 
+        if progress.wasCanceled():
+            progress.close()
+            return
+
+        # Update progress for file list population
+        if self.img_count > 100:
+            progress.setLabelText(f"Loading {self.img_count} images...")
+            progress.setMaximum(self.img_count)
+
         # Populate file list widget
-        for imgPath in self.m_img_list:
+        for i, imgPath in enumerate(self.m_img_list):
             item = QListWidgetItem(imgPath)
             self.file_list_widget.addItem(item)
+            if self.img_count > 100 and i % 50 == 0:
+                progress.setValue(i)
+                QApplication.processEvents()
+                if progress.wasCanceled():
+                    progress.close()
+                    return
+
+        progress.setValue(self.img_count)
 
         # Populate gallery widget with annotation directory
         self.gallery_widget.set_save_dir(self.default_save_dir)
@@ -1924,6 +1966,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.full_gallery.set_save_dir(self.default_save_dir)
             self.full_gallery.set_image_list(self.m_img_list)
             self._refresh_full_gallery_statuses()
+
+        progress.close()
 
         # Update image count in status bar
         self.update_image_count()
@@ -2352,8 +2396,11 @@ def read(filename, default=None):
     try:
         reader = QImageReader(filename)
         reader.setAutoTransform(True)
-        return reader.read()
-    except:
+        image = reader.read()
+        if image.isNull():
+            return default
+        return image
+    except (IOError, OSError):
         return default
 
 
