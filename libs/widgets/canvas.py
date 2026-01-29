@@ -73,6 +73,14 @@ class Canvas(QWidget):
         self.drawing_line_color = qcolor
         self.drawing_rect_color = qcolor
 
+    def set_background_color(self, color):
+        """Set canvas background color (for dark mode support)."""
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor(color))
+        self.setAutoFillBackground(True)
+        self.setPalette(palette)
+        self.update()
+
     def enterEvent(self, ev):
         self.override_cursor(self._cursor)
 

@@ -68,20 +68,20 @@ from libs.formats.create_ml_io import CreateMLReader, JSON_EXT
 # Utils
 from libs.utils.constants import (
     SETTING_ADVANCE_MODE, SETTING_AUTO_SAVE, SETTING_AUTO_SAVE_ENABLED,
-    SETTING_AUTO_SAVE_INTERVAL, SETTING_DRAW_SQUARE, SETTING_FILENAME,
-    SETTING_FILL_COLOR, SETTING_GALLERY_MODE, SETTING_ICON_SIZE,
-    SETTING_LABEL_FILE_FORMAT, SETTING_LAST_OPEN_DIR, SETTING_LINE_COLOR,
-    SETTING_PAINT_LABEL, SETTING_RECENT_FILES, SETTING_SAVE_DIR,
-    SETTING_SINGLE_CLASS, SETTING_TOOLBAR_EXPANDED, SETTING_WIN_POSE,
-    SETTING_WIN_SIZE, SETTING_WIN_STATE, FORMAT_PASCALVOC, FORMAT_YOLO,
-    FORMAT_CREATEML
+    SETTING_AUTO_SAVE_INTERVAL, SETTING_DARK_MODE, SETTING_DRAW_SQUARE,
+    SETTING_FILENAME, SETTING_FILL_COLOR, SETTING_GALLERY_MODE,
+    SETTING_ICON_SIZE, SETTING_LABEL_FILE_FORMAT, SETTING_LAST_OPEN_DIR,
+    SETTING_LINE_COLOR, SETTING_PAINT_LABEL, SETTING_RECENT_FILES,
+    SETTING_SAVE_DIR, SETTING_SINGLE_CLASS, SETTING_TOOLBAR_EXPANDED,
+    SETTING_WIN_POSE, SETTING_WIN_SIZE, SETTING_WIN_STATE, FORMAT_PASCALVOC,
+    FORMAT_YOLO, FORMAT_CREATEML
 )
 from libs.utils.utils import (
     new_icon, new_action, add_actions, format_shortcut, Struct,
     generate_color_by_text, have_qstring, natural_sort
 )
 from libs.utils.stringBundle import StringBundle
-from libs.utils.styles import TOOLBAR_STYLE, get_combined_style
+from libs.utils.styles import TOOLBAR_STYLE, get_combined_style, Theme, get_stylesheet, get_canvas_background
 from libs.utils.ustr import ustr
 from libs.utils.hashableQListWidgetItem import HashableQListWidgetItem
 
@@ -907,6 +907,20 @@ class MainWindow(QMainWindow, WindowMixin):
             light_brighten, light_darken, light_org, None))
         self.menus.view.addMenu(self.auto_save_interval_menu)
         self.menus.view.addMenu(self.icon_size_menu)
+
+        # Dark mode toggle
+        self.dark_mode_action = QAction('&Dark Mode', self)
+        self.dark_mode_action.setCheckable(True)
+        self.dark_mode_action.setShortcut('Ctrl+D')
+        self.dark_mode_action.setToolTip('Toggle dark mode theme')
+        self.dark_mode_action.setChecked(settings.get(SETTING_DARK_MODE, False))
+        self.dark_mode_action.triggered.connect(self._toggle_dark_mode)
+        self.menus.view.addSeparator()
+        self.menus.view.addAction(self.dark_mode_action)
+
+        # Apply initial theme
+        self._current_theme = Theme.DARK if settings.get(SETTING_DARK_MODE, False) else Theme.LIGHT
+        self._apply_theme(self._current_theme)
 
         self.menus.file.aboutToShow.connect(self.update_file_menu)
 
@@ -2315,6 +2329,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_DRAW_SQUARE] = self.draw_squares_option.isChecked()
         settings[SETTING_LABEL_FILE_FORMAT] = self.label_file_format
         settings[SETTING_TOOLBAR_EXPANDED] = self.tools.is_expanded()
+        settings[SETTING_DARK_MODE] = self.dark_mode_action.isChecked()
         settings.save()
 
     def load_recent(self, filename):
@@ -2932,6 +2947,30 @@ class MainWindow(QMainWindow, WindowMixin):
             self.status("Auto-saving...")
             self._save_file(save_path)
             self.status("Auto-saved to %s" % os.path.basename(save_path))
+
+    # Dark mode methods (Issue #7)
+    def _toggle_dark_mode(self):
+        """Toggle between light and dark theme."""
+        if self.dark_mode_action.isChecked():
+            self._current_theme = Theme.DARK
+        else:
+            self._current_theme = Theme.LIGHT
+        self._apply_theme(self._current_theme)
+
+    def _apply_theme(self, theme):
+        """Apply the given theme to all components."""
+        # Apply main stylesheet
+        self.setStyleSheet(get_stylesheet(theme))
+
+        # Update toolbar style
+        if hasattr(self, 'tools') and self.tools:
+            from libs.utils.styles import get_toolbar_style
+            self.tools.setStyleSheet(get_toolbar_style(theme))
+
+        # Update canvas background
+        if hasattr(self, 'canvas') and self.canvas:
+            bg_color = get_canvas_background(theme)
+            self.canvas.set_background_color(bg_color)
 
     # Statistics methods (Issue #19) - Stats shown in gallery mode
     def _refresh_all_statistics(self):
