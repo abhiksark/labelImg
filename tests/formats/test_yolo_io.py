@@ -253,6 +253,85 @@ class TestYoloReader(unittest.TestCase):
         # No valid shapes should be loaded since the only annotation was invalid
         self.assertEqual(len(shapes), 0)
 
+    def test_malformed_line_skipped(self):
+        """Test that malformed lines (wrong number of values) are skipped."""
+        txt_path = os.path.join(self.temp_dir, 'malformed.txt')
+        classes_path = os.path.join(self.temp_dir, 'classes.txt')
+
+        # Write malformed annotation (only 3 values instead of 5)
+        with open(txt_path, 'w') as f:
+            f.write("0 0.5 0.5\n")  # Missing w and h
+
+        with open(classes_path, 'w') as f:
+            f.write("person\n")
+
+        mock_image = MockQImage(100, 100)
+        reader = YoloReader(txt_path, mock_image, classes_path)
+        shapes = reader.get_shapes()
+
+        # Malformed line should be skipped
+        self.assertEqual(len(shapes), 0)
+
+    def test_mixed_valid_invalid_lines(self):
+        """Test that valid lines are loaded even when some are invalid."""
+        txt_path = os.path.join(self.temp_dir, 'mixed.txt')
+        classes_path = os.path.join(self.temp_dir, 'classes.txt')
+
+        with open(txt_path, 'w') as f:
+            f.write("0 0.5 0.5 0.2 0.2\n")  # Valid
+            f.write("5 0.5 0.5 0.2 0.2\n")  # Invalid class index
+            f.write("0 0.3 0.3\n")           # Malformed
+            f.write("0 0.7 0.7 0.2 0.2\n")  # Valid
+
+        with open(classes_path, 'w') as f:
+            f.write("person\n")
+
+        mock_image = MockQImage(100, 100)
+        reader = YoloReader(txt_path, mock_image, classes_path)
+        shapes = reader.get_shapes()
+
+        # Only 2 valid lines should be loaded
+        self.assertEqual(len(shapes), 2)
+
+    def test_empty_lines_skipped(self):
+        """Test that empty lines are skipped gracefully."""
+        txt_path = os.path.join(self.temp_dir, 'empty_lines.txt')
+        classes_path = os.path.join(self.temp_dir, 'classes.txt')
+
+        with open(txt_path, 'w') as f:
+            f.write("\n")                    # Empty line
+            f.write("0 0.5 0.5 0.2 0.2\n")  # Valid
+            f.write("   \n")                 # Whitespace only
+            f.write("0 0.7 0.7 0.2 0.2\n")  # Valid
+
+        with open(classes_path, 'w') as f:
+            f.write("person\n")
+
+        mock_image = MockQImage(100, 100)
+        reader = YoloReader(txt_path, mock_image, classes_path)
+        shapes = reader.get_shapes()
+
+        # Both valid lines should be loaded
+        self.assertEqual(len(shapes), 2)
+
+    def test_negative_class_index_skipped(self):
+        """Test that negative class indices are skipped."""
+        txt_path = os.path.join(self.temp_dir, 'negative.txt')
+        classes_path = os.path.join(self.temp_dir, 'classes.txt')
+
+        with open(txt_path, 'w') as f:
+            f.write("-1 0.5 0.5 0.2 0.2\n")  # Negative index
+
+        with open(classes_path, 'w') as f:
+            f.write("person\n")
+
+        mock_image = MockQImage(100, 100)
+        reader = YoloReader(txt_path, mock_image, classes_path)
+        shapes = reader.get_shapes()
+
+        # Negative index should be skipped
+        self.assertEqual(len(shapes), 0)
+
     def test_roundtrip_write_read(self):
         """Test that write/read roundtrip preserves data."""
         txt_path = os.path.join(self.temp_dir, 'roundtrip.txt')
