@@ -2959,18 +2959,33 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def _apply_theme(self, theme):
         """Apply the given theme to all components."""
+        from libs.utils.styles import get_toolbar_style, get_theme_colors
+
         # Apply main stylesheet
         self.setStyleSheet(get_stylesheet(theme))
 
-        # Update toolbar style
+        # Update toolbar style and expand button
         if hasattr(self, 'tools') and self.tools:
-            from libs.utils.styles import get_toolbar_style
             self.tools.setStyleSheet(get_toolbar_style(theme))
+            if hasattr(self.tools, 'apply_theme'):
+                self.tools.apply_theme(theme)
 
         # Update canvas background
         if hasattr(self, 'canvas') and self.canvas:
             bg_color = get_canvas_background(theme)
             self.canvas.set_background_color(bg_color)
+
+        # Update scroll area viewport background
+        if hasattr(self, 'scroll_area') and self.scroll_area:
+            colors = get_theme_colors(theme)
+            self.scroll_area.viewport().setStyleSheet(
+                f"background-color: {colors['background']};"
+            )
+
+        # Update gallery widget
+        if hasattr(self, 'gallery_widget') and self.gallery_widget:
+            if hasattr(self.gallery_widget, 'apply_theme'):
+                self.gallery_widget.apply_theme(theme)
 
     # Statistics methods (Issue #19) - Stats shown in gallery mode
     def _refresh_all_statistics(self):

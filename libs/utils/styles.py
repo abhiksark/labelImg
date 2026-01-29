@@ -414,6 +414,88 @@ def get_canvas_background(theme: Theme) -> str:
     return '#2d2d2d' if theme == Theme.DARK else '#e0e0e0'
 
 
+def get_slider_style(theme: Theme) -> str:
+    """Generate slider stylesheet for gallery widget."""
+    c = _get_colors(theme)
+    return f"""
+QSlider::groove:horizontal {{
+    height: 6px;
+    background: {c['border']};
+    border-radius: 3px;
+}}
+QSlider::handle:horizontal {{
+    background: {c['accent']};
+    width: 16px;
+    height: 16px;
+    margin: -5px 0;
+    border-radius: 8px;
+}}
+QSlider::handle:horizontal:hover {{
+    background: {c['accent_text']};
+}}
+QSlider::sub-page:horizontal {{
+    background: {c['accent']};
+    border-radius: 3px;
+}}
+"""
+
+
+def get_gallery_controls_style(theme: Theme) -> str:
+    """Generate gallery slider frame and button styles."""
+    c = _get_colors(theme)
+    return {
+        'frame': f"""
+QFrame {{
+    background-color: {c['surface']};
+    border-bottom: 1px solid {c['border']};
+}}
+""",
+        'button': f"""
+QPushButton {{
+    background-color: {c['background']};
+    border: 1px solid {c['border']};
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    color: {c['text']};
+}}
+QPushButton:hover {{
+    background-color: {c['hover']};
+    border-color: {c['text_secondary']};
+}}
+QPushButton:pressed {{
+    background-color: {c['pressed']};
+}}
+""",
+        'label': f"font-weight: bold; color: {c['text']};",
+    }
+
+
+def get_expand_button_style(theme: Theme) -> str:
+    """Generate expand button stylesheet for toolbar."""
+    c = _get_colors(theme)
+    return f"""
+QToolButton {{
+    border: none;
+    background: transparent;
+    padding: 4px;
+}}
+QToolButton:hover {{
+    background: {c['hover']};
+    border-radius: 4px;
+}}
+"""
+
+
+def get_label_dialog_style(theme: Theme) -> str:
+    """Generate label dialog filter styles."""
+    c = _get_colors(theme)
+    return {
+        'filter_label': f"color: {c['text_secondary']};",
+        'count_label': f"color: {c['text_secondary']}; font-size: 11px;",
+    }
+
+
 def get_theme_colors(theme: Theme) -> dict:
     """Get full color palette for the given theme."""
     return _get_colors(theme)

@@ -66,6 +66,9 @@ class Canvas(QWidget):
         self.verified = False
         self.draw_square = False
 
+        # Theme background color for dark mode support
+        self._theme_background = QColor(232, 232, 232, 255)  # Default light mode
+
         # initialisation for panning
         self.pan_initial_pos = QPoint()
 
@@ -75,8 +78,9 @@ class Canvas(QWidget):
 
     def set_background_color(self, color):
         """Set canvas background color (for dark mode support)."""
+        self._theme_background = QColor(color)
         palette = self.palette()
-        palette.setColor(self.backgroundRole(), QColor(color))
+        palette.setColor(self.backgroundRole(), self._theme_background)
         self.setAutoFillBackground(True)
         self.setPalette(palette)
         self.update()
@@ -573,14 +577,12 @@ class Canvas(QWidget):
             p.drawLine(0, int(self.prev_point.y()), int(self.pixmap.width()), int(self.prev_point.y()))
 
         self.setAutoFillBackground(True)
+        pal = self.palette()
         if self.verified:
-            pal = self.palette()
             pal.setColor(self.backgroundRole(), QColor(184, 239, 38, 128))
-            self.setPalette(pal)
         else:
-            pal = self.palette()
-            pal.setColor(self.backgroundRole(), QColor(232, 232, 232, 255))
-            self.setPalette(pal)
+            pal.setColor(self.backgroundRole(), self._theme_background)
+        self.setPalette(pal)
 
         p.end()
 
