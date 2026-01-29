@@ -186,7 +186,8 @@ class ToolBar(QToolBar):
     def apply_theme(self, theme):
         """Apply theme to expand button."""
         self._current_theme = theme
-        self._expand_btn.setStyleSheet(get_expand_button_style(theme))
+        if hasattr(self, '_expand_btn') and self._expand_btn:
+            self._expand_btn.setStyleSheet(get_expand_button_style(theme))
 
 
 class ToolButton(QToolButton):

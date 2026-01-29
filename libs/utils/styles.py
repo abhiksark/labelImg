@@ -444,29 +444,8 @@ def get_gallery_controls_style(theme: Theme) -> str:
     """Generate gallery slider frame and button styles."""
     c = _get_colors(theme)
     return {
-        'frame': f"""
-QFrame {{
-    background-color: {c['surface']};
-    border-bottom: 1px solid {c['border']};
-}}
-""",
-        'button': f"""
-QPushButton {{
-    background-color: {c['background']};
-    border: 1px solid {c['border']};
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 11px;
-    color: {c['text']};
-}}
-QPushButton:hover {{
-    background-color: {c['hover']};
-    border-color: {c['text_secondary']};
-}}
-QPushButton:pressed {{
-    background-color: {c['pressed']};
-}}
-""",
+        'frame': f"background-color: {c['surface']}; border-bottom: 1px solid {c['border']};",
+        'button': f"background-color: {c['background']}; border: 1px solid {c['border']}; border-radius: 4px; font-weight: bold; font-size: 11px; color: {c['text']};",
         'label': f"font-weight: bold; color: {c['text']};",
     }
 

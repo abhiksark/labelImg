@@ -355,6 +355,7 @@ class GalleryWidget(QWidget):
         if self._show_size_slider:
             # Container frame for better visual grouping
             self._slider_frame = QFrame()
+            self._slider_frame.setAutoFillBackground(True)  # Required for stylesheet bg
             slider_layout = QHBoxLayout(self._slider_frame)
             slider_layout.setContentsMargins(10, 8, 10, 8)
             slider_layout.setSpacing(8)
