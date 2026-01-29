@@ -85,54 +85,71 @@ class Shape(object):
         self._closed = False
 
     def paint(self, painter):
-        if self.points:
-            color = self.select_line_color if self.selected else self.line_color
-            pen = QPen(color)
-            # Try using integer sizes for smoother drawing(?)
-            pen.setWidth(max(1, int(round(2.0 / self.scale))))
-            painter.setPen(pen)
+        if not self.points:
+            return
 
-            line_path = QPainterPath()
-            vertex_path = QPainterPath()
+        line_path, vertex_path = self._build_paths()
+        self._draw_shape(painter, line_path, vertex_path)
 
-            line_path.moveTo(self.points[0])
-            # Uncommenting the following line will draw 2 paths
-            # for the 1st vertex, and make it non-filled, which
-            # may be desirable.
-            # self.drawVertex(vertex_path, 0)
+        if self.paint_label:
+            self._draw_label(painter)
 
-            for i, p in enumerate(self.points):
-                line_path.lineTo(p)
-                self.draw_vertex(vertex_path, i)
-            if self.is_closed():
-                line_path.lineTo(self.points[0])
+        if self.fill:
+            color = self.select_fill_color if self.selected else self.fill_color
+            painter.fillPath(line_path, color)
 
-            painter.drawPath(line_path)
-            painter.drawPath(vertex_path)
-            painter.fillPath(vertex_path, self.vertex_fill_color)
+    def _build_paths(self):
+        """Build the line and vertex paths for drawing."""
+        line_path = QPainterPath()
+        vertex_path = QPainterPath()
 
-            # Draw text at the top-left
-            if self.paint_label:
-                min_x = sys.maxsize
-                min_y = sys.maxsize
-                min_y_label = int(1.25 * self.label_font_size)
-                for point in self.points:
-                    min_x = min(min_x, point.x())
-                    min_y = min(min_y, point.y())
-                if min_x != sys.maxsize and min_y != sys.maxsize:
-                    font = QFont()
-                    font.setPointSize(self.label_font_size)
-                    font.setBold(True)
-                    painter.setFont(font)
-                    if self.label is None:
-                        self.label = ""
-                    if min_y < min_y_label:
-                        min_y += min_y_label
-                    painter.drawText(int(min_x), int(min_y), self.label)
+        line_path.moveTo(self.points[0])
+        for i, p in enumerate(self.points):
+            line_path.lineTo(p)
+            self.draw_vertex(vertex_path, i)
 
-            if self.fill:
-                color = self.select_fill_color if self.selected else self.fill_color
-                painter.fillPath(line_path, color)
+        if self.is_closed():
+            line_path.lineTo(self.points[0])
+
+        return line_path, vertex_path
+
+    def _draw_shape(self, painter, line_path, vertex_path):
+        """Draw the shape outline and vertices."""
+        color = self.select_line_color if self.selected else self.line_color
+        pen = QPen(color)
+        pen.setWidth(max(1, int(round(2.0 / self.scale))))
+        painter.setPen(pen)
+
+        painter.drawPath(line_path)
+        painter.drawPath(vertex_path)
+        painter.fillPath(vertex_path, self.vertex_fill_color)
+
+    def _draw_label(self, painter):
+        """Draw the label text at the top-left corner of the shape."""
+        min_x, min_y = self._get_top_left_corner()
+        if min_x == sys.maxsize or min_y == sys.maxsize:
+            return
+
+        min_y_label = int(1.25 * self.label_font_size)
+        if min_y < min_y_label:
+            min_y += min_y_label
+
+        font = QFont()
+        font.setPointSize(self.label_font_size)
+        font.setBold(True)
+        painter.setFont(font)
+
+        label_text = self.label if self.label is not None else ""
+        painter.drawText(int(min_x), int(min_y), label_text)
+
+    def _get_top_left_corner(self):
+        """Get the top-left corner coordinates of the shape."""
+        min_x = sys.maxsize
+        min_y = sys.maxsize
+        for point in self.points:
+            min_x = min(min_x, point.x())
+            min_y = min(min_y, point.y())
+        return min_x, min_y
 
     def draw_vertex(self, path, i):
         d = self.point_size / self.scale
