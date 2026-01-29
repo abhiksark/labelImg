@@ -2413,16 +2413,20 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.file_path:
             return  # No file loaded
 
-        # Determine save path
-        if self.default_save_dir:
-            save_path = self._generate_save_path()
+        # Determine save path (same logic as save_file)
+        image_file_name = os.path.basename(self.file_path)
+        saved_file_name = os.path.splitext(image_file_name)[0]
+
+        if self.default_save_dir is not None and len(ustr(self.default_save_dir)):
+            save_path = os.path.join(ustr(self.default_save_dir), saved_file_name)
         else:
-            save_path = self.file_path
+            image_file_dir = os.path.dirname(self.file_path)
+            save_path = os.path.join(image_file_dir, saved_file_name)
 
         if save_path:
             self.status("Auto-saving...")
-            if self._save_file(save_path):
-                self.status("Auto-saved to %s" % os.path.basename(save_path))
+            self._save_file(save_path)
+            self.status("Auto-saved to %s" % os.path.basename(save_path))
 
 
 def get_main_app(argv=None):
