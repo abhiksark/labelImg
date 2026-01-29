@@ -84,8 +84,6 @@ class CreateMLWriter:
             y_min = y2
             y_max = y1
         width = x_max - x_min
-        if width < 0:
-            width = width * -1
         height = y_max - y_min
         # x and y from center of rect
         x = x_min + width / 2
@@ -114,8 +112,6 @@ class CreateMLReader:
         if output_list:
             self.verified = output_list[0].get("verified", False)
 
-        if len(self.shapes) > 0:
-            self.shapes = []
         for image in output_list:
             if image["image"] == self.filename:
                 for shape in image["annotations"]:
