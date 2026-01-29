@@ -71,18 +71,8 @@ class CreateMLWriter:
         Path(self.output_file).write_text(json.dumps(output_dict), ENCODE_METHOD)
 
     def calculate_coordinates(self, x1, x2, y1, y2):
-        if x1 < x2:
-            x_min = x1
-            x_max = x2
-        else:
-            x_min = x2
-            x_max = x1
-        if y1 < y2:
-            y_min = y1
-            y_max = y2
-        else:
-            y_min = y2
-            y_max = y1
+        x_min, x_max = min(x1, x2), max(x1, x2)
+        y_min, y_max = min(y1, y2), max(y1, y2)
         width = x_max - x_min
         height = y_max - y_min
         # x and y from center of rect
