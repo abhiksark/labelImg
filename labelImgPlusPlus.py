@@ -119,6 +119,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self._no_selection_slot = False
         self._beginner = True
         self.gallery_mode_enabled = False
+        self._gallery_batch_id = 0  # For cancelling pending batch processing
         self._normal_central_widget = None
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
@@ -789,6 +790,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if hasattr(self, '_toggling_gallery') and self._toggling_gallery:
             return
         self._toggling_gallery = True
+        # Cancel any pending batch processing from previous gallery sessions
+        self._gallery_batch_id += 1
         try:
             self.gallery_mode_enabled = value
 
@@ -866,10 +869,13 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Process uncached images in batches to keep UI responsive
         if uncached:
-            self._process_full_gallery_status_batch(uncached, 0)
+            self._process_full_gallery_status_batch(uncached, 0, 50, self._gallery_batch_id)
 
-    def _process_full_gallery_status_batch(self, images, start_idx, batch_size=50):
+    def _process_full_gallery_status_batch(self, images, start_idx, batch_size=50, batch_id=None):
         """Process status updates in batches to avoid UI freeze."""
+        # Cancel if batch_id doesn't match current (gallery was toggled)
+        if batch_id != self._gallery_batch_id:
+            return
         if not (hasattr(self, 'full_gallery') and self.full_gallery):
             return  # Gallery was closed
 
@@ -883,7 +889,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Schedule next batch if more images remain
         if end_idx < len(images):
             QTimer.singleShot(0, lambda: self._process_full_gallery_status_batch(
-                images, end_idx, batch_size))
+                images, end_idx, batch_size, batch_id))
 
     def populate_mode_actions(self):
         if self.beginner():
