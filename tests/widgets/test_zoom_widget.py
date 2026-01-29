@@ -59,6 +59,36 @@ class TestZoomWidget(unittest.TestCase):
         self.assertEqual(len(signal_received), 1)
         self.assertEqual(signal_received[0], 120)
 
+    def test_range_is_1_to_500(self):
+        """Test ZoomWidget range is 1-500."""
+        widget = ZoomWidget(value=100)
+        self.assertEqual(widget.minimum(), 1)
+        self.assertEqual(widget.maximum(), 500)
+
+    def test_suffix(self):
+        """Test ZoomWidget shows percentage suffix."""
+        widget = ZoomWidget(value=100)
+        self.assertEqual(widget.suffix(), ' %')
+
+    def test_tooltip(self):
+        """Test ZoomWidget has 'Zoom Level' tooltip."""
+        widget = ZoomWidget(value=100)
+        self.assertEqual(widget.toolTip(), 'Zoom Level')
+
+    def test_minimumSizeHint(self):
+        """Test minimumSizeHint returns valid QSize."""
+        widget = ZoomWidget(value=100)
+        size_hint = widget.minimumSizeHint()
+        self.assertIsNotNone(size_hint)
+        self.assertGreater(size_hint.width(), 0)
+        self.assertGreater(size_hint.height(), 0)
+
+    def test_alignment(self):
+        """Test ZoomWidget is center aligned."""
+        from PyQt5.QtCore import Qt
+        widget = ZoomWidget(value=100)
+        self.assertEqual(widget.alignment(), Qt.AlignCenter)
+
 
 if __name__ == '__main__':
     unittest.main()

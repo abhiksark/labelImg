@@ -52,6 +52,37 @@ class TestStringBundle(unittest.TestCase):
         with self.assertRaises(AssertionError):
             str_bundle.get_string("nonexistent_string_id")
 
+    def test_get_bundle_with_explicit_none(self):
+        """Test get_bundle with None locale auto-detects."""
+        # Should not raise, will auto-detect or fallback to English
+        str_bundle = StringBundle.get_bundle(None)
+        self.assertIsNotNone(str_bundle)
+        # Should at least have English strings
+        result = str_bundle.get_string("openDir")
+        self.assertIsNotNone(result)
+
+    def test_multiple_string_keys_loaded(self):
+        """Test that multiple strings are loaded from bundle."""
+        str_bundle = StringBundle.get_bundle('en')
+        # Verify multiple keys exist
+        self.assertIsNotNone(str_bundle.get_string("openDir"))
+        self.assertIsNotNone(str_bundle.get_string("save"))
+        self.assertIsNotNone(str_bundle.get_string("quit"))
+
+    def test_string_bundle_caches_id_to_message(self):
+        """Test that StringBundle stores strings in id_to_message dict."""
+        str_bundle = StringBundle.get_bundle('en')
+        self.assertIsInstance(str_bundle.id_to_message, dict)
+        self.assertIn("openDir", str_bundle.id_to_message)
+
+    def test_fallback_path_includes_base_path(self):
+        """Test that fallback paths always include base path."""
+        str_bundle = StringBundle.get_bundle('de')
+        # Even for German locale, should load some strings
+        # (will have base English strings even if no German translation)
+        self.assertIsNotNone(str_bundle.id_to_message)
+        self.assertGreater(len(str_bundle.id_to_message), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

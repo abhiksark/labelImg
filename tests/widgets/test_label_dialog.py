@@ -115,6 +115,58 @@ class TestLabelDialogFilter(unittest.TestCase):
         dialog._filter_list('')
         self.assertEqual(dialog.count_label.text(), f"{len(self.labels)} labels")
 
+    def test_validate_accepts_valid_text(self):
+        """Test validate() accepts dialog when text is present."""
+        dialog = LabelDialog(list_item=self.labels)
+        dialog.edit.setText('valid_label')
+        # Mock accept to track if called
+        accepted = []
+        dialog.accept = lambda: accepted.append(True)
+        dialog.validate()
+        self.assertEqual(len(accepted), 1)
+
+    def test_validate_rejects_empty_text(self):
+        """Test validate() does not accept dialog when text is empty."""
+        dialog = LabelDialog(list_item=self.labels)
+        dialog.edit.setText('')
+        accepted = []
+        dialog.accept = lambda: accepted.append(True)
+        dialog.validate()
+        self.assertEqual(len(accepted), 0)
+
+    def test_validate_rejects_whitespace_only(self):
+        """Test validate() does not accept dialog when text is whitespace."""
+        dialog = LabelDialog(list_item=self.labels)
+        dialog.edit.setText('   ')
+        accepted = []
+        dialog.accept = lambda: accepted.append(True)
+        dialog.validate()
+        self.assertEqual(len(accepted), 0)
+
+    def test_post_process_trims_whitespace(self):
+        """Test post_process() trims whitespace from edit text."""
+        dialog = LabelDialog(list_item=self.labels)
+        dialog.edit.setText('  test_label  ')
+        dialog.post_process()
+        self.assertEqual(dialog.edit.text(), 'test_label')
+
+    def test_list_item_click_sets_edit_text(self):
+        """Test clicking list item sets edit text."""
+        dialog = LabelDialog(list_item=self.labels)
+        # Simulate click on first item
+        item = dialog.list_widget.item(0)
+        dialog.list_item_click(item)
+        self.assertEqual(dialog.edit.text(), 'person')
+
+    def test_autocomplete_setup(self):
+        """Test autocomplete completer is configured."""
+        dialog = LabelDialog(list_item=self.labels)
+        completer = dialog.edit.completer()
+        self.assertIsNotNone(completer)
+        # Verify model has our labels
+        model = completer.model()
+        self.assertIsNotNone(model)
+
 
 if __name__ == '__main__':
     unittest.main()
