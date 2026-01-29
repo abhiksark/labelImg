@@ -16,6 +16,7 @@ except ImportError:
     from PyQt4.QtCore import Qt, QPoint
 
 from libs.utils.utils import new_icon, label_validator, trimmed
+from libs.utils.styles import Theme, get_label_dialog_style
 
 BB = QDialogButtonBox
 
@@ -63,9 +64,8 @@ class LabelDialog(QDialog):
 
             # Label for filter
             filter_layout = QHBoxLayout()
-            filter_label = QLabel("Filter:")
-            filter_label.setStyleSheet("color: #666;")
-            filter_layout.addWidget(filter_label)
+            self.filter_label = QLabel("Filter:")
+            filter_layout.addWidget(self.filter_label)
             filter_layout.addWidget(self.filter_edit)
             layout.addLayout(filter_layout)
 
@@ -79,8 +79,10 @@ class LabelDialog(QDialog):
 
             # Count label
             self.count_label = QLabel(f"{len(self.list_item)} labels")
-            self.count_label.setStyleSheet("color: #888; font-size: 11px;")
             layout.addWidget(self.count_label)
+
+            # Apply initial theme
+            self.apply_theme(Theme.LIGHT)
 
         self.setLayout(layout)
 
@@ -106,6 +108,14 @@ class LabelDialog(QDialog):
                 self.count_label.setText(f"{visible_count} of {len(self.list_item)} labels")
             else:
                 self.count_label.setText(f"{len(self.list_item)} labels")
+
+    def apply_theme(self, theme):
+        """Apply theme to dialog labels."""
+        styles = get_label_dialog_style(theme)
+        if hasattr(self, 'filter_label'):
+            self.filter_label.setStyleSheet(styles['filter_label'])
+        if hasattr(self, 'count_label'):
+            self.count_label.setStyleSheet(styles['count_label'])
 
     def validate(self):
         if trimmed(self.edit.text()):

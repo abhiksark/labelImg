@@ -14,6 +14,8 @@ except ImportError:
     )
     from PyQt4.QtCore import Qt, pyqtSignal, QSize
 
+from libs.utils.styles import Theme, get_expand_button_style
+
 
 # Base icon size for toolbar buttons (Feather icons are 24x24)
 BASE_ICON_SIZE = 22
@@ -148,17 +150,8 @@ class ToolBar(QToolBar):
         self._expand_btn.setToolTip("Expand toolbar")
         self._expand_btn.setIconSize(QSize(16, 16))
         self._expand_btn.clicked.connect(self.toggle_expanded)
-        self._expand_btn.setStyleSheet("""
-            QToolButton {
-                border: none;
-                background: transparent;
-                padding: 4px;
-            }
-            QToolButton:hover {
-                background: #e0e0e0;
-                border-radius: 4px;
-            }
-        """)
+        self._current_theme = Theme.LIGHT
+        self._expand_btn.setStyleSheet(get_expand_button_style(Theme.LIGHT))
         self.addWidget(self._expand_btn)
 
         # Set initial width
@@ -189,6 +182,12 @@ class ToolBar(QToolBar):
     def is_expanded(self):
         """Return current expanded state."""
         return self._expanded
+
+    def apply_theme(self, theme):
+        """Apply theme to expand button."""
+        self._current_theme = theme
+        if hasattr(self, '_expand_btn') and self._expand_btn:
+            self._expand_btn.setStyleSheet(get_expand_button_style(theme))
 
 
 class ToolButton(QToolButton):

@@ -21,6 +21,8 @@ try:
 except ImportError:
     ElementTree = None
 
+from libs.utils.styles import Theme, get_slider_style, get_gallery_controls_style, get_gallery_list_style
+
 
 def generate_color_by_text(text):
     """Generate a consistent color based on text hash."""
@@ -346,16 +348,15 @@ class GalleryWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # Add size slider if enabled
+        self._current_theme = Theme.LIGHT
+        self._slider_frame = None
+        self._preset_buttons = []
+
         if self._show_size_slider:
             # Container frame for better visual grouping
-            slider_frame = QFrame()
-            slider_frame.setStyleSheet("""
-                QFrame {
-                    background-color: #f5f5f5;
-                    border-bottom: 1px solid #ddd;
-                }
-            """)
-            slider_layout = QHBoxLayout(slider_frame)
+            self._slider_frame = QFrame()
+            self._slider_frame.setAutoFillBackground(True)  # Required for stylesheet bg
+            slider_layout = QHBoxLayout(self._slider_frame)
             slider_layout.setContentsMargins(10, 8, 10, 8)
             slider_layout.setSpacing(8)
 
@@ -369,24 +370,10 @@ class GalleryWidget(QWidget):
             for label, size in self.size_presets.items():
                 btn = QPushButton(label)
                 btn.setFixedSize(32, 26)
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #fff;
-                        border: 1px solid #ccc;
-                        border-radius: 4px;
-                        font-weight: bold;
-                        font-size: 11px;
-                    }
-                    QPushButton:hover {
-                        background-color: #e8e8e8;
-                        border-color: #999;
-                    }
-                    QPushButton:pressed {
-                        background-color: #ddd;
-                    }
-                """)
+                btn.setAutoFillBackground(True)  # Required for stylesheet bg
                 btn.clicked.connect(lambda checked, s=size: self._set_preset_size(s))
                 slider_layout.addWidget(btn)
+                self._preset_buttons.append(btn)
 
             slider_layout.addSpacing(10)
 
@@ -395,37 +382,18 @@ class GalleryWidget(QWidget):
             self.size_slider.setMinimum(self.MIN_ICON_SIZE)
             self.size_slider.setMaximum(self.MAX_ICON_SIZE)
             self.size_slider.setValue(self._icon_size)
-            self.size_slider.setStyleSheet("""
-                QSlider::groove:horizontal {
-                    height: 6px;
-                    background: #ddd;
-                    border-radius: 3px;
-                }
-                QSlider::handle:horizontal {
-                    background: #4285f4;
-                    width: 16px;
-                    height: 16px;
-                    margin: -5px 0;
-                    border-radius: 8px;
-                }
-                QSlider::handle:horizontal:hover {
-                    background: #3367d6;
-                }
-                QSlider::sub-page:horizontal {
-                    background: #4285f4;
-                    border-radius: 3px;
-                }
-            """)
             self.size_slider.valueChanged.connect(self._on_size_changed)
             slider_layout.addWidget(self.size_slider, 1)
 
             # Size value display
             self.size_value_label = QLabel(f"{self._icon_size}px")
             self.size_value_label.setMinimumWidth(50)
-            self.size_value_label.setStyleSheet("font-weight: bold; color: #333;")
             slider_layout.addWidget(self.size_value_label)
 
-            layout.addWidget(slider_frame)
+            layout.addWidget(self._slider_frame)
+
+            # Apply initial theme
+            self.apply_theme(Theme.LIGHT)
 
         layout.addWidget(self.list_widget)
 
@@ -452,6 +420,22 @@ class GalleryWidget(QWidget):
             self.size_slider.setValue(size)
         else:
             self._on_size_changed(size)
+
+    def apply_theme(self, theme):
+        """Apply theme to gallery slider controls and list widget."""
+        self._current_theme = theme
+        if self._slider_frame:
+            styles = get_gallery_controls_style(theme)
+            self._slider_frame.setStyleSheet(styles['frame'])
+            for btn in self._preset_buttons:
+                btn.setStyleSheet(styles['button'])
+            if hasattr(self, 'size_value_label'):
+                self.size_value_label.setStyleSheet(styles['label'])
+        if hasattr(self, 'size_slider'):
+            self.size_slider.setStyleSheet(get_slider_style(theme))
+        # Style the list widget for proper text colors
+        if hasattr(self, 'list_widget'):
+            self.list_widget.setStyleSheet(get_gallery_list_style(theme))
 
     def _reload_all_thumbnails(self):
         """Reload all thumbnails at current size."""
